@@ -151,13 +151,17 @@ public class AnnotationProxy extends KrollProxy
 			Object rightButton = getProperty(TiC.PROPERTY_RIGHT_BUTTON);
 			Object rightView = getProperty(TiC.PROPERTY_RIGHT_VIEW);
 			if (leftButton != null) {
+				//Log.d(TAG, "Setting left button");
 				infoWindow.setLeftOrRightPane(leftButton, TiMapInfoWindow.LEFT_PANE);
-			} else {
+			} else if (leftView != null) {
+				//Log.d(TAG, "Setting left view");
 				infoWindow.setLeftOrRightPane(leftView, TiMapInfoWindow.LEFT_PANE);
 			}
 			if (rightButton != null) {
+				//Log.d(TAG, "Setting right button");
 				infoWindow.setLeftOrRightPane(rightButton, TiMapInfoWindow.RIGHT_PANE);
-			} else {
+			} else if (rightView != null) {
+				//Log.d(TAG, "Setting right view");
 				infoWindow.setLeftOrRightPane(rightView, TiMapInfoWindow.RIGHT_PANE);
 			}
 			if (hasProperty(TiC.PROPERTY_TITLE)) {
@@ -193,7 +197,7 @@ public class AnnotationProxy extends KrollProxy
 	{
 		if (obj instanceof TiViewProxy) {
 			KrollDict d = ((TiViewProxy) obj).toImage();
-			Object imageBlob = d.get(TiC.PROPERTY_MEDIA);
+			Object imageBlob = d.get("media");
 			if (imageBlob instanceof TiBlob) {
 				Bitmap image = ((TiBlob) imageBlob).getImage();
 				if (image != null) {

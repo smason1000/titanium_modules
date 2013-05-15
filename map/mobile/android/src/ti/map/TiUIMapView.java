@@ -121,14 +121,19 @@ public class TiUIMapView extends TiUIFragment implements GoogleMap.OnMarkerClick
 			addAnnotations(annotations);
 		}
 		if (d.containsKey(TiC.PROPERTY_ENABLE_ZOOM_CONTROLS)) {
-			setZoomControlsEnabled(TiConvert.toBoolean(d, TiC.PROPERTY_ENABLE_ZOOM_CONTROLS, true));
+			setZoomControlsEnabled(TiConvert.toBoolean(d.get(TiC.PROPERTY_ENABLE_ZOOM_CONTROLS)));
+		}
+		if (d.containsKey(MapModule.PROPERTY_TILT_ENABLED)) {
+			setTiltGesturesEnabled(TiConvert.toBoolean(d.get(MapModule.PROPERTY_TILT_ENABLED)));
+		}
+		if (d.containsKey(MapModule.PROPERTY_ROTATE_ENABLED)) {
+			setRotateGesturesEnabled(TiConvert.toBoolean(d.get(MapModule.PROPERTY_ROTATE_ENABLED)));
 		}
 	}
 
 	@Override
 	public void propertyChanged(String key, Object oldValue, Object newValue, KrollProxy proxy)
 	{
-
 		if (key.equals(TiC.PROPERTY_USER_LOCATION)) {
 			setUserLocation(TiConvert.toBoolean(newValue));
 		} else if (key.equals(TiC.PROPERTY_MAP_TYPE)) {
@@ -142,7 +147,11 @@ public class TiUIMapView extends TiUIFragment implements GoogleMap.OnMarkerClick
 		} else if (key.equals(TiC.PROPERTY_ANNOTATIONS)) {
 			updateAnnotations((Object[]) newValue);
 		} else if (key.equals(TiC.PROPERTY_ENABLE_ZOOM_CONTROLS)) {
-			setZoomControlsEnabled(TiConvert.toBoolean(newValue, true));
+			setZoomControlsEnabled(TiConvert.toBoolean(newValue));
+		} else if (key.equals(MapModule.PROPERTY_TILT_ENABLED)) {
+			setTiltGesturesEnabled(TiConvert.toBoolean(newValue));
+		} else if (key.equals(MapModule.PROPERTY_ROTATE_ENABLED)) {
+			setRotateGesturesEnabled(TiConvert.toBoolean(newValue));
 		} else {
 			super.propertyChanged(key, oldValue, newValue, proxy);
 		}
@@ -176,6 +185,16 @@ public class TiUIMapView extends TiUIFragment implements GoogleMap.OnMarkerClick
 	protected void setZoomControlsEnabled(boolean enabled)
 	{
 		map.getUiSettings().setZoomControlsEnabled(enabled);
+	}
+
+	protected void setTiltGesturesEnabled(boolean enabled)
+	{
+		map.getUiSettings().setTiltGesturesEnabled(enabled);
+	}
+
+	protected void setRotateGesturesEnabled(boolean enabled)
+	{
+		map.getUiSettings().setRotateGesturesEnabled(enabled);
 	}
 
 	public void updateCamera(HashMap<String, Object> dict)
@@ -559,7 +578,7 @@ public class TiUIMapView extends TiUIFragment implements GoogleMap.OnMarkerClick
 	}
 
 	// Intercept the touch event to find out the correct clicksource if clicking on the info window.
-	@Override
+	//@Override
 	protected boolean interceptTouchEvent(MotionEvent ev)
 	{
 		if (ev.getAction() == MotionEvent.ACTION_UP && selectedAnnotation != null) {
