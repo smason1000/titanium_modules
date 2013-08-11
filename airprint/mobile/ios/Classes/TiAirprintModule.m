@@ -90,8 +90,15 @@
     }
     controller.showsPageRange = [TiUtils boolValue:[args objectForKey:@"showsPageRange"] def:YES];
     controller.printingItem = url;
-    
-    NSLog(@"[INFO] Printing out %@", url);
+
+    UIPrintInfo *printInfo = [UIPrintInfo printInfo];
+    printInfo.outputType = UIPrintInfoOutputGeneral;
+    printInfo.jobName = [TiUtils stringValue:[args objectForKey:@"jobName"]];
+    if (printInfo.jobName == nil)
+        printInfo.jobName = @"Unspecified Job";
+    controller.printInfo = printInfo;
+   
+    NSLog(@"[INFO] Printing out '%@' %@", printInfo.jobName, url);
 
     UIPrintInteractionCompletionHandler completionHandler =
     ^(UIPrintInteractionController *printController, BOOL completed, NSError *error) {
@@ -104,19 +111,34 @@
     TiApp* tiApp = [TiApp app];
 	if ([TiUtils isIPad]==NO)
 	{
+        //NSLog(@"[INFO] Showing print options for iPhone");
 		[controller presentAnimated:YES completionHandler:completionHandler];
 	}
     #if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_3_2
 	else
 	{
-		UIView* poView = [tiApp controller].view;
-		TiViewProxy* popoverViewProxy = [args objectForKey:@"view"];
-		if (popoverViewProxy!=nil)
-		{
-			poView = [popoverViewProxy view];
-		}
-
-        [controller presentFromRect:poView.bounds inView:poView animated:YES completionHandler:completionHandler];
+        //NSLog(@"[INFO] Showing print options for iPad.");
+        UIView* view = nil;
+		TiViewProxy* poView = [args objectForKey:@"view"];
+        if (poView == nil)
+        {
+            view = [[[[TiApp app] window] subviews] lastObject];
+        }
+        else
+        {
+            if ([poView supportsNavBarPositioning] && [poView isUsingBarButtonItem])
+            {
+                //NSLog(@"[INFO] Presenting options from bar button.");
+                UIBarButtonItem *button = [poView barButtonItem];
+                [controller presentFromBarButtonItem:button animated:YES completionHandler:completionHandler];
+                [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updatePopover:) name:UIApplicationWillChangeStatusBarOrientationNotification object:nil];
+                return;
+            }
+            view = [poView view];
+        }
+        //NSLog(@"[INFO] Presenting options from view.");
+        CGRect rect = view.bounds;
+        [controller presentFromRect:rect inView:view animated:YES completionHandler:completionHandler];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updatePopover:) name:UIApplicationWillChangeStatusBarOrientationNotification object:nil];
 	}
     #endif
@@ -124,6 +146,7 @@
 
 -(void)updatePopover:(NSNotification *)notification;
 {
+    //NSLog(@"updatePopover notified");
 	[[UIPrintInteractionController sharedPrintController] performSelector:@selector(dismissAnimated:)
                                                                withObject:NO
                                                                afterDelay:[[UIApplication sharedApplication] statusBarOrientationAnimationDuration]
